@@ -48,23 +48,21 @@ def solve_system():
         A_dominant, b_dominant = make_strictly_diagonally_dominant(A, b)
         
         matrix_dominant_text = "\n".join([f"[{A_dominant[i][0]:.4f}, {A_dominant[i][1]:.4f}, {A_dominant[i][2]:.4f}] = [{b_dominant[i]:.4f}]" for i in range(3)])
-        dominant_matrix_label.config(text=f'Matriz Dominante:\n{matrix_dominant_text}', justify="center")
+        dominant_matrix_label.config(text=f'Matriz Dominante:\n{matrix_dominant_text}')
         
         solution, iterations = gauss_seidel(A_dominant, b_dominant, x0, tol=tol)
         
         result_text = f"X = {solution[0]:.4f}\nY = {solution[1]:.4f}\nZ = {solution[2]:.4f}"
         iterations_text = f'Iteraciones: {iterations}'
-        result_label.config(text=f'Solución:\n{result_text}\n\n{iterations_text}', justify="center")
+        result_label.config(text=f'Solución:\n{result_text}\n\n{iterations_text}')
     
     except Exception as e:
         messagebox.showerror("Error", f"Error al calcular la solución: {e}")
 
 def reset_fields():
-    for i in range(3):
-        for j in range(3):
-            entries[i][j].delete(0, tk.END)
-        entries_b[i].delete(0, tk.END)
-        entries_x0[i].delete(0, tk.END)
+    for widgets in entries + entries_b + entries_x0:
+        for widget in widgets:
+            widget.delete(0, tk.END)
     
     tol_entry.delete(0, tk.END)
     tol_entry.insert(0, "1e-4")
