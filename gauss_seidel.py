@@ -1,4 +1,3 @@
-import tkinter as tk
 from tkinter import messagebox
 
 # Función que valida si la matriz es estrictamente diagonalmente dominante
@@ -31,28 +30,35 @@ def is_strictly_diagonally_dominant(A, tolerance=1e-10):
 # Método de Gauss-Seidel para resolver sistemas de ecuaciones lineales
 def gauss_seidel(A, b, x0, tol=1e-4, max_iterations=1000):
     """
-    Implementa el método iterativo de Gauss-Seidel para resolver el sistema de ecuaciones Ax = b.
+    Método iterativo de Gauss-Seidel para resolver el sistema de ecuaciones Ax = b.
+    Devuelve los resultados de cada iteración y el error de X.
     """
     n = len(A)
     x = x0[:]  # Inicializar el vector de soluciones con los valores iniciales
-    
-    # Iterar hasta que la solución converja o se alcance el número máximo de iteraciones
+    results = []  # Lista para almacenar los resultados de cada iteración
+
     for iteration in range(max_iterations):
         x_new = x[:]  # Crear una copia de la solución anterior
-        
+
         # Actualizar cada valor de x_i según la fórmula del método Gauss-Seidel
         for i in range(n):
             sum1 = sum(A[i][j] * x_new[j] for j in range(i))  # Parte izquierda
             sum2 = sum(A[i][j] * x[j] for j in range(i + 1, n))  # Parte derecha
             x_new[i] = (b[i] - sum1 - sum2) / A[i][i]
         
+        # Calcular el error aproximado de X (primer valor del vector de solución)
+        error_x = abs(((x_new[0] - x[0]) / x_new[0]) * 100) if x_new[0] != 0 else 0
+
+        # Guardar los resultados de esta iteración: iteración, X, Y, Z, error_x
+        results.append((iteration, x_new[0], x_new[1], x_new[2], error_x))
+
         # Verificar si la diferencia entre iteraciones es menor que la tolerancia
         if max(abs(x_new[i] - x[i]) for i in range(n)) < tol:
-            return x_new, iteration + 1  # Devolver la solución y el número de iteraciones
-        
-        x = x_new[:]  # Actualizar la solución
+            break  # Salir si ya convergió
 
-    return x, max_iterations  # Devolver la solución final después de todas las iteraciones
+        x = x_new[:]  # Actualizar la solución
+    
+    return results  # Devolver todos los resultados por iteración
 
 # Función que valida las entradas antes de resolver el sistema
 def validate_inputs(entries, entries_b, entries_x0, tol_entry):
@@ -84,32 +90,3 @@ def validate_inputs(entries, entries_b, entries_x0, tol_entry):
     except ValueError:
         messagebox.showerror("Error en las entradas", "Asegúrate de que todos los campos contengan números válidos.")
         return None, None, None, None
-
-# Función que resuelve el sistema de ecuaciones y actualiza los resultados en la interfaz
-def solve_system(entries, entries_b, entries_x0, tol_entry, result_label):
-    """
-    Resuelve el sistema de ecuaciones ingresado solo si la matriz es estrictamente
-    diagonalmente dominante. Si no lo es, muestra un mensaje de error en lugar de la solución.
-    """
-    # Validar los datos de entrada
-    A, b, x0, tol = validate_inputs(entries, entries_b, entries_x0, tol_entry)
-    if A is None:
-        return  # Si hay un error en los datos, no hacer nada
-    
-    # Verificar si la matriz es estrictamente diagonalmente dominante
-    if not is_strictly_diagonally_dominant(A):
-        # Mostrar un mensaje de error en la etiqueta de la solución
-        result_label.config(text="La ecuación no es estrictamente diagonalmente dominante, no se puede solucionar.")
-        return
-    
-    # Si la matriz es estrictamente diagonalmente dominante, proceder a resolver
-    try:
-        solution, iterations = gauss_seidel(A, b, x0, tol=tol)
-        
-        # Mostrar la solución en la interfaz
-        result_text = f"X = {solution[0]:.4f}\nY = {solution[1]:.4f}\nZ = {solution[2]:.4f}"
-        iterations_text = f'Número de iteraciones: {iterations}'
-        result_label.config(text=f'Solución:\n{result_text}\n\n{iterations_text}')
-    
-    except Exception as e:
-        messagebox.showerror("Error", f"Error al calcular la solución: {e}")
