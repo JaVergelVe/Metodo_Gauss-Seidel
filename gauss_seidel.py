@@ -1,31 +1,38 @@
 from tkinter import messagebox
+import itertools
 
 # Función que valida si la matriz es estrictamente diagonalmente dominante
-def is_strictly_diagonally_dominant(A, tolerance=1e-10):
+def is_strictly_diagonally_dominant(A):
     """
     Verifica si la matriz A es estrictamente diagonalmente dominante.
-    
-    Args:
-        A: Matriz cuadrada.
-        tolerance: Tolerancia numérica para las comparaciones.
-
-    Returns:
-        True si la matriz es estrictamente dominante, False en caso contrario.
     """
+    n = len(A)
+    for i in range(n):
+        # Suma de los valores absolutos de la fila excepto el elemento diagonal
+        sum_row = sum(abs(A[i][j]) for j in range(n) if j != i)
+        # Verificar la condición de dominancia diagonal estricta
+        if abs(A[i][i]) <= sum_row:
+            return False
+    return True
 
+def reorder_to_dominant(A, b):
+    """
+    Intenta reordenar las filas de la matriz A para que sea estrictamente diagonalmente dominante.
+    Devuelve la nueva matriz A, el nuevo vector b reordenados, o None si no es posible.
+    """
     n = len(A)
     
-    for i in range(n):
-        sum_non_diag = 0
-        for j in range(n):
-            if i != j:
-                sum_non_diag += abs(A[i][j])
+    # Iteramos sobre todas las posibles permutaciones de las filas de A
+    for perm in itertools.permutations(range(n)):
+        A_permuted = [A[i] for i in perm]
+        b_permuted = [b[i] for i in perm]
         
-        # Usar una tolerancia para evitar problemas de precisión numérica
-        if abs(A[i][i]) <= sum_non_diag + tolerance:
-            return False
+        # Verificamos si la matriz permutada es estrictamente diagonalmente dominante
+        if is_strictly_diagonally_dominant(A_permuted):
+            return A_permuted, b_permuted  # Si lo es, devolvemos la matriz y el vector reordenados
     
-    return True
+    # Si ninguna permutación hace que la matriz sea dominante, devolvemos None
+    return None, None
 
 # Método de Gauss-Seidel para resolver sistemas de ecuaciones lineales
 def gauss_seidel(A, b, x0, tol=1e-4, max_iterations=1000):
